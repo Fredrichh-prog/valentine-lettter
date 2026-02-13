@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Valentine Letter</title>
+  <style>
+    :root{
+      --bg1:#fff0f6;
+      --bg2:#ffe4ef;
+      --accent:#ff4d8d;
+      --accent2:#ff7aa8;
+      --paper:#ffffff;
+      --shadow: 0 18px 60px rgba(0,0,0,.12);
+      --shadow2: 0 10px 25px rgba(0,0,0,.10);
+      --radius: 22px;
+      --text:#2b2b2b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 20%, #fff 0%, transparent 55%),
+        radial-gradient(900px 500px at 80% 80%, #fff 0%, transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:24px;
+    }
+
+    .wrap{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+      align-items:center;
+      justify-items:center;
+    }
+
+    .hint{
+      text-align:center;
+      font-size:14px;
+      opacity:.85;
+      line-height:1.4;
+    }
+
+    /* Envelope */
+    .envelope{
+      width:min(560px, 96vw);
+      aspect-ratio: 16/10;
+      position:relative;
+      border-radius: var(--radius);
+      filter: drop-shadow(var(--shadow));
+      cursor:pointer;
+      user-select:none;
+      transform: translateZ(0);
+      outline:none;
+    }
+    .env-body{
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #ffd1e2, #ffc1d8);
+      overflow:hidden;
+    }
+    .env-body::before{
+      content:"";
+      position:absolute; inset:-40% -40% auto auto;
+      width:70%; height:70%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), rgba(255,255,255,0) 65%);
+      transform: rotate(12deg);
+    }
+
+    /* back triangles */
+    .back-left, .back-right{
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      pointer-events:none;
+    }
+    .back-left::before{
+      content:"";
+      position:absolute; left:0; top:0; bottom:0;
+      width:55%;
+      background: linear-gradient(135deg, rgba(255,255,255,.35), rgba(255,255,255,0));
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    .back-right::before{
+      content:"";
+      position:absolute; right:0; top:0; bottom:0;
+      width:55%;
+      background: linear-gradient(225deg, rgba(255,255,255,.28), rgba(255,255,255,0));
+      clip-path: polygon(100% 0, 0 50%, 100% 100%);
+    }
+
+    /* front */
+    .front{
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      pointer-events:none;
+      z-index: 6;
+    }
+    .front::before{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
+    }
+    .front-tri{
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    .front-tri::before{
+      content:"";
+      position:absolute; left:0; right:0; bottom:0; top:0;
+      background: linear-gradient(180deg, #ffb6d0, #ff9fc2);
+      clip-path: polygon(0 45%, 50% 80%, 100% 45%, 100% 100%, 0 100%);
+      filter: drop-shadow(0 -8px 18px rgba(0,0,0,.08));
+    }
+
+    /* flap */
+    .flap{
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      transform-origin: 50% 45%;
+      transition: transform 700ms cubic-bezier(.2,.9,.2,1);
+      pointer-events:none;
+      overflow:hidden;
+      z-index: 7;
+    }
+    .flap::before{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, #ffd3e3, #ffb8d1);
+      clip-path: polygon(0 45%, 50% 10%, 100% 45%, 50% 80%);
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,.10));
+    }
+
+    /* seal */
+    .seal{
+      position:absolute;
+      left:50%; top:62%;
+      transform: translate(-50%,-50%);
+      width:58px; height:58px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,0) 55%),
+        linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: var(--shadow2);
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:.5px;
+      pointer-events:none;
+      z-index: 8;
+    }
+
+    /* Letter (slides OUT and becomes full) */
+    .letter{
+      position:absolute;
+      left:50%;
+      bottom:12%;
+      transform: translateX(-50%) translateY(40px) scale(.98);
+      width:90%;
+      height:82%;
+      background: var(--paper);
+      border-radius: 18px;
+      box-shadow: 0 12px 25px rgba(0,0,0,.10);
+      opacity:0;
+      pointer-events:none;
+      z-index: 5; /* behind flap/front until open */
+      transition:
+        transform 900ms cubic-bezier(.18,.95,.18,1),
+        opacity 450ms ease;
+      overflow:hidden;
+    }
+
+    .letter-inner{
+      height:100%;
+      overflow:auto;
+      padding:18px 18px 22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      position:sticky;
+      top:0;
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.86));
+      backdrop-filter: blur(6px);
+      padding-bottom:10px;
+      z-index: 2;
+    }
+    .title{
+      font-weight:900;
+      color:#c2185b;
+      font-size:18px;
+    }
+    .sub{
+      opacity:.8;
+      font-size:13px;
+      margin-top:2px;
+    }
+    .close{
+      border:0;
+      background: rgba(255,77,141,.12);
+      color:#c2185b;
+      padding:10px 12px;
+      border-radius: 12px;
+      font-weight:800;
+      cursor:pointer;
+      pointer-events:auto;
+      white-space:nowrap;
+    }
+    .close:active{transform: scale(.98);}
+
+    .message{
+      line-height:1.6;
+      font-size:15px;
+      padding:16px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,77,141,.08), rgba(255,77,141,0));
+      border: 1px solid rgba(255,77,141,.18);
+    }
+    .message p{margin:0 0 10px}
+    .message p:last-child{margin:0}
+
+    .sig{
+      margin-top:auto;
+      padding-top:8px;
+      opacity:.9;
+      font-size:14px;
+      text-align:right;
+    }
+
+    /* OPEN STATE:
+       - flap flips
+       - letter slides up MORE and expands into a big modal-like card */
+    .envelope.open .flap{
+      transform: rotateX(180deg);
+    }
+    .envelope.open .letter{
+      opacity:1;
+      pointer-events:auto;
+      z-index: 20;
+      /* pull it far up and make it "fully open" */
+      transform: translateX(-50%) translateY(-140px) scale(1);
+    }
+
+    /* On very small screens, pull less so it stays visible */
+    @media (max-width: 520px){
+      .title{font-size:16px}
+      .message{font-size:14px}
+      .close{padding:9px 10px}
+      .envelope.open .letter{
+        transform: translateX(-50%) translateY(-105px) scale(1);
+      }
+    }
+
+    /* Extra polish: when open, soften envelope behind */
+    .envelope.open .env-body{
+      filter: saturate(.95) brightness(.98);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hint">
+      <div style="font-weight:800;color:#c2185b;">Click the envelope to open 💌</div>
+      <div>Press <b>Esc</b> or tap <b>Close</b> to fold it back.</div>
+    </div>
+
+    <div class="envelope" id="envelope" aria-label="Open valentine letter" role="button" tabindex="0">
+      <div class="env-body"></div>
+      <div class="back-left"></div>
+      <div class="back-right"></div>
+
+      <!-- Letter content (NO card image on top) -->
+      <div class="letter" id="letter" aria-hidden="true">
+        <div class="letter-inner">
+          <div class="topbar">
+            <div>
+              <div class="title">My Dear “keii”</div>
+              <div class="sub">Happy valentiness 💗</div>
+            </div>
+            <button class="close" id="closeBtn" type="button">Close</button>
+          </div>
+
+          <div class="message">
+            <p>Hi love,</p>
+            <p>
+              Happy valentiness! 😚💞
+              I know I don’t really celebrate this… but I just want you to know
+              You aren't just someone I'm dating; you are the person who occupies my every thought and makes me want to be the best version of myself. Thank you for making my heart full and for being the most amazing Valentine I could ever ask for. I truly, deeply appreciate you entering my life and making me happy.I loveee youuu sososoo muchh 😘😘
+            </p>
+            <p>
+              Thank you for being you. You make my days softer, lighter, and happier.
+            </p>
+            <p>
+              Always yours,
+            </p>
+            <div class="sig">— ❤️</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flap"></div>
+
+      <div class="front">
+        <div class="front-tri"></div>
+      </div>
+
+      <div class="seal">❤</div>
+    </div>
+  </div>
+
+  <script>
+    const envelope = document.getElementById("envelope");
+    const letter = document.getElementById("letter");
+    const closeBtn = document.getElementById("closeBtn");
+
+    function setOpen(isOpen){
+      envelope.classList.toggle("open", isOpen);
+      letter.setAttribute("aria-hidden", String(!isOpen));
+    }
+
+    envelope.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "closeBtn") return;
+      setOpen(!envelope.classList.contains("open"));
+    });
+
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(false);
+    });
+
+    envelope.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setOpen(!envelope.classList.contains("open"));
+      }
+      if (e.key === "Escape") setOpen(false);
+    });
+  </script>
+</body>
+</html>
